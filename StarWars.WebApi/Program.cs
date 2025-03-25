@@ -37,6 +37,8 @@ builder.Services.RegisterServices();
 
 var app = builder.Build();
 
+app.UseExceptionHandling();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

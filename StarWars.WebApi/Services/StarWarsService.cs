@@ -4,13 +4,13 @@ namespace StarWars.WebApi.Services
 {
     public class StarWarsService(HttpClient httpClient, IMemoryCache cache)
     {
+        // We are assuming the External API below is expensive to consume, so we are caching the results for 5 minutes.
         // Retrieves characters from SWAPI. If a search term is provided, it will be appended as a query parameter.
         // The response is cached for 5 minutes to reduce redundant calls.
+
         public async Task<object> GetCharactersAsync(string? search)
         {
-            string cacheKey = string.IsNullOrEmpty(search)
-                ? "swapi_characters_all"
-                : $"swapi_characters_{search}";
+            string cacheKey = string.IsNullOrEmpty(search)? "swapi_characters_all" : $"swapi_characters_{search}";
 
             if (cache.TryGetValue(cacheKey, out object? cachedData))
             {

@@ -77,6 +77,8 @@ I could not implement the unit tests yet due to limited time. So "0" code covera
 
 ## Future Improvements (WORKING ON IT..)
 - Generic Exception Hnadling for Web API
+- Add custom exceptions for spesific cases
+- Improve Caching mechanisim by meausiring the frequency of the requests and cache the most frequent ones. (I think this is very good idea)
 - Add Unit Tests, bug fixes, code coverage, 
 - add mutation scores (reliability score of the tests)
 - add In-Memory Intgration Testing (this one maybe later, just a fantasy)
