@@ -74,3 +74,9 @@ docker attach starwars-consoleclient
 ## Unit Testing & Code Coverage
 
 I could not implement the unit tests yet due to limited time. So "0" code coverage for now. There may be minor bugs due to this.
+
+## Future Improvements (WORKING ON IT..)
+- Generic Exception Hnadling for Web API
+- Add Unit Tests, bug fixes, code coverage, 
+- add mutation scores (reliability score of the tests)
+- add In-Memory Intgration Testing (this one maybe later, just a fantasy)
