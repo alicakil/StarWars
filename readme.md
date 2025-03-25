@@ -70,6 +70,7 @@ docker attach starwars-consoleclient
 - Implements request logging middleware
 - Supports environment-based configuration
 
-## License
 
-[Specify your license here]
+## Unit Testing & Code Coverage
+
+I could not implement the unit tests yet due to limited time. So "0" code coverage for now. There may be minor bugs due to this.
