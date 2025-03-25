@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "StarWars.ConsoleClient": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}

@@ -1,0 +1,57 @@
+version: '3.8'
+services:
+  # PostgreSQL Database Service
+  postgres:
+    image: postgres:15-alpine
+    container_name: starwars-postgres
+    environment:
+      - POSTGRES_DB=StarWarsDb
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=yourpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - starwars-network
+
+  # Web API Service
+  webapi:
+    build:
+      context: .
+      dockerfile: StarWars.WebApi/Dockerfile
+    container_name: starwars-webapi
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=StarWarsDb;Username=postgres;Password=yourpassword
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    depends_on:
+      - postgres
+    restart: on-failure
+    networks:
+      - starwars-network
+
+  consoleclient:
+    build:
+      context: .
+      dockerfile: StarWars.ConsoleClient/Dockerfile
+    container_name: starwars-consoleclient
+    depends_on:
+      - webapi
+    stdin_open: true  # This keeps the container running
+    tty: true         # This allows interaction
+    networks:
+      - starwars-network
+    environment:
+      - WEBAPI_HOST=webapi
+      - WEBAPI_PORT=8080
+
+volumes:
+  postgres-data:
+    driver: local
+
+networks:
+  starwars-network:
+    driver: bridge
