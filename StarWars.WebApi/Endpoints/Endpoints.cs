@@ -11,7 +11,7 @@ public static class Endpoints
         // GET /api/v1/characters?search={searchTerm}
         // Retrieves character data from SWAPI; optionally filtered by a search term.
         // The result is cached in memory for 5 minutes.
-        app.MapGet("/api/v1/characters", async (string? search, StarWarsService swService) =>
+        app.MapGet("/api/v1/characters", async (string? search, IStarWarsService swService) =>
         {
             var result = await swService.GetCharactersAsync(search);
             return Results.Ok(result);

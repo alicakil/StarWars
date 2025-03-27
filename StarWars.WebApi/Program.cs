@@ -30,7 +30,7 @@ builder.Services.AddRateLimiter(options =>
 });
 
 // Register HttpClient for SWAPI integration
-builder.Services.AddHttpClient<IStarWarsService, StarWarsService>(client =>
+builder.Services.AddHttpClient<IStarWarsService, StarWarsService>(client => 
 {
     client.BaseAddress = new Uri("https://swapi.dev/api/");
 });
