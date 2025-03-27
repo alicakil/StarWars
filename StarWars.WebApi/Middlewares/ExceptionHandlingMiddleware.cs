@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using StarWars.DAL;
+using System.Net;
 
 namespace StarWars.WebApi.Middlewares;
 
@@ -10,10 +11,19 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
         {
             await next(context);
         }
+        catch (EntityNotFoundException ex)
+        {
+            logger.LogWarning(ex, "Entity not found.");
+            context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsJsonAsync(new { error = ex.Message });
+        }
         catch (Exception ex)
         {
             logger.LogError(ex, "An unhandled exception occurred.");
-            await HandleExceptionAsync(context);
+            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsJsonAsync(new { error = "An unexpected error occurred. Please try again later." });
         }
     }
 

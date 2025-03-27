@@ -1,40 +1,54 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
+using System.Net.Http.Json;
 
-namespace StarWars.WebApi.Services
+namespace StarWars.WebApi.Services;
+
+public interface IStarWarsService
 {
-    public class StarWarsService(HttpClient httpClient, IMemoryCache cache)
+    Task<IEnumerable<dynamic>> GetCharactersAsync(string? searchTerm = null);
+}
+
+public class StarWarsService : IStarWarsService
+{
+    private readonly HttpClient _httpClient;
+    private readonly IMemoryCache _memoryCache;
+
+    public StarWarsService(HttpClient httpClient, IMemoryCache memoryCache)
     {
-        // We are assuming the External API below is expensive to consume, so we are caching the results for 5 minutes.
-        // Retrieves characters from SWAPI. If a search term is provided, it will be appended as a query parameter.
-        // The response is cached for 5 minutes to reduce redundant calls.
+        _httpClient = httpClient;
+        _memoryCache = memoryCache;
+    }
 
-        public async Task<object> GetCharactersAsync(string? search)
+    public virtual async Task<IEnumerable<dynamic>> GetCharactersAsync(string? searchTerm = null)
+    {
+        // Create a cache key based on the search term
+        string cacheKey = $"characters_{searchTerm ?? "all"}";
+
+        // Try to get from cache first
+        if (_memoryCache.TryGetValue(cacheKey, out IEnumerable<dynamic>? cachedCharacters) && cachedCharacters != null)
         {
-            string cacheKey = string.IsNullOrEmpty(search)? "swapi_characters_all" : $"swapi_characters_{search}";
-
-            if (cache.TryGetValue(cacheKey, out object? cachedData))
-            {
-                return cachedData;
-            }
-
-            string url = "people/";
-            if (!string.IsNullOrEmpty(search))
-            {
-                url += $"?search={search}";
-            }
-
-            var response = await httpClient.GetAsync(url);
-            if (!response.IsSuccessStatusCode)
-            {
-                return new { error = "Error retrieving data from SWAPI" };
-            }
-
-            var content = await response.Content.ReadAsStringAsync();
-
-            // Cache the response for 5 minutes.
-            cache.Set(cacheKey, content, TimeSpan.FromMinutes(5));
-
-            return content;
+            return cachedCharacters;
         }
+
+        // If not in cache, fetch from SWAPI
+        var response = await _httpClient.GetFromJsonAsync<dynamic>("people/");
+
+        var characters = (IEnumerable<dynamic>?)response?.results ?? new List<dynamic>();
+
+        // Filter by search term if provided
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            characters = characters.Where(c =>
+                c.name.ToString().Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+            ).ToList();
+        }
+
+        // Cache the results for 5 minutes
+        var cacheEntryOptions = new MemoryCacheEntryOptions()
+            .SetSlidingExpiration(TimeSpan.FromMinutes(5));
+
+        _memoryCache.Set(cacheKey, characters, cacheEntryOptions);
+
+        return characters;
     }
 }

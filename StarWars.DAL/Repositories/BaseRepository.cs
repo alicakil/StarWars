@@ -22,6 +22,9 @@ public class BaseRepository<T>(AppDbContext context) : IBaseRepository<T> where 
 
     public void Remove(T entity)
     {
+        if (entity == null)
+            throw new EntityNotFoundException($"Entity of type {typeof(T).Name} was not found.");
+
         _dbSet.Remove(entity);
         context.SaveChanges();
     }

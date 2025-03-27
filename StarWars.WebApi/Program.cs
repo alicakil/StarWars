@@ -6,6 +6,7 @@ using StarWars.WebApi.Middlewares;
 using StarWars.WebApi.ServiceRegistiration;
 using StarWars.WebApi.Services;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Register the DbContext with PostgreSQL
@@ -16,7 +17,7 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connect
 builder.Services.AddMemoryCache();
 
 // Register HttpClient for SWAPI integration
-builder.Services.AddHttpClient<StarWarsService>(client =>
+builder.Services.AddHttpClient<IStarWarsService, StarWarsService>(client =>
 {
     client.BaseAddress = new Uri("https://swapi.dev/api/");
 });
@@ -49,9 +50,18 @@ if (app.Environment.IsDevelopment())
 /// in production I would prefer to use a migration script on a deployment pipeline
 using var scope = app.Services.CreateScope();
 var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-Console.WriteLine("Applying migrations...");
-db.Database.Migrate();
-Console.WriteLine("Migrations applied.");
+
+if (db.Database.IsRelational())
+{
+    Console.WriteLine("Applying migrations...");
+    db.Database.Migrate();
+    Console.WriteLine("Migrations applied.");
+}
+else
+{
+    // For in-memory provider, just ensure the database is created.
+    db.Database.EnsureCreated();
+}
 
 app.UseHttpsRedirection();
 
@@ -60,3 +70,5 @@ app.UseRequestLogging();
 
 app.MapEndpoints();
 app.Run();
+
+public partial class Program { }
