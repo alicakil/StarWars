@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using StarWars.DAL;
@@ -5,6 +6,7 @@ using StarWars.WebApi.Endpoints;
 using StarWars.WebApi.Middlewares;
 using StarWars.WebApi.ServiceRegistiration;
 using StarWars.WebApi.Services;
+using System.Threading.RateLimiting;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +17,17 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connect
 
 // Register in-memory caching service
 builder.Services.AddMemoryCache();
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("fixed", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 100; // Maximum number of requests allowed.
+        limiterOptions.Window = TimeSpan.FromMinutes(1); // Time window.
+        limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        limiterOptions.QueueLimit = 10; // Maximum queued requests.
+    });
+});
 
 // Register HttpClient for SWAPI integration
 builder.Services.AddHttpClient<IStarWarsService, StarWarsService>(client =>
@@ -37,6 +50,8 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.RegisterServices();
 
 var app = builder.Build();
+
+app.UseRateLimiter();
 
 app.UseExceptionHandling();
 

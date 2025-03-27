@@ -26,14 +26,6 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
             await context.Response.WriteAsJsonAsync(new { error = "An unexpected error occurred. Please try again later." });
         }
     }
-
-    private static Task HandleExceptionAsync(HttpContext context)
-    {
-        context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-        context.Response.ContentType = "application/json";
-        var result = new { Message = "An unexpected error occurred. Please try again later." };
-        return context.Response.WriteAsJsonAsync(result);
-    }
 }
 
 public static class ExceptionHandlingMiddlewareExtensions
